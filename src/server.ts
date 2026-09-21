@@ -721,6 +721,232 @@ app.delete(
 );
 
 // --------------------------------------------------
+// AI Lead Qualification
+// --------------------------------------------------
+
+app.post(
+  '/api/leads/:id/qualify',
+  async (req, res) => {
+
+    try {
+
+      const lead =
+        await Lead.findById(
+          req.params.id
+        );
+
+      if (!lead) {
+
+        return res.status(404).json({
+          success: false,
+          error: 'Lead not found'
+        });
+
+      }
+
+      const prompt = `
+You are an AI sales qualification assistant.
+
+Analyze the CRM lead below and determine its sales qualification.
+
+Lead information:
+
+Name: ${lead.name || 'Not provided'}
+Company: ${lead.company || 'Not provided'}
+Email: ${lead.email || 'Not provided'}
+Phone: ${lead.phone || 'Not provided'}
+Budget: ${lead.budget ?? 'Not provided'}
+Requirement: ${lead.requirement || 'Not provided'}
+Message: ${lead.message || 'Not provided'}
+Source: ${lead.source || 'Not provided'}
+Current Status: ${lead.status || 'Not provided'}
+
+Evaluate:
+
+1. Purchase intent
+2. Budget clarity
+3. Requirement clarity
+4. Business need
+5. Likelihood of becoming a customer
+
+Return ONLY valid JSON.
+
+Do not use markdown.
+Do not use code fences.
+
+Use exactly this structure:
+
+{
+  "qualification": "qualified",
+  "score": 85,
+  "reason": "Short explanation of why this lead received this score.",
+  "recommendation": "Recommended next sales action."
+}
+
+Rules:
+
+qualification must be exactly one of:
+
+qualified
+potential
+unqualified
+
+score must be an integer between 0 and 100.
+
+Keep reason under 250 characters.
+
+Keep recommendation under 250 characters.
+`;
+
+      const response =
+        await axios.post(
+
+          `${OLLAMA_URL}/api/generate`,
+
+          {
+            model:
+              OLLAMA_MODEL,
+
+            prompt,
+
+            stream:
+              false
+          },
+
+          {
+            timeout:
+              120000
+          }
+
+        );
+
+      let aiText =
+        response.data?.response || '';
+
+      aiText =
+        aiText
+          .replace(
+            /^```json\s*/i,
+            ''
+          )
+          .replace(
+            /^```\s*/i,
+            ''
+          )
+          .replace(
+            /\s*```$/i,
+            ''
+          )
+          .trim();
+
+      let result;
+
+      try {
+
+        result =
+          JSON.parse(
+            aiText
+          );
+
+      } catch {
+
+        console.error(
+          'Invalid AI qualification JSON:',
+          aiText
+        );
+
+        return res.status(500).json({
+
+          success: false,
+
+          error:
+            'AI returned an invalid qualification response.',
+
+          rawResponse:
+            aiText
+
+        });
+
+      }
+
+      const qualificationValues = [
+        'qualified',
+        'potential',
+        'unqualified'
+      ];
+
+      const qualification =
+        qualificationValues.includes(
+          result.qualification
+        )
+          ? result.qualification
+          : 'potential';
+
+      let score =
+        Number(result.score);
+
+      if (
+        !Number.isFinite(score)
+      ) {
+        score = 0;
+      }
+
+      score =
+        Math.max(
+          0,
+          Math.min(
+            100,
+            Math.round(score)
+          )
+        );
+
+      res.json({
+
+        success:
+          true,
+
+        qualification,
+
+        score,
+
+        reason:
+          result.reason ||
+          'No reason provided.',
+
+        recommendation:
+          result.recommendation ||
+          'Review the lead manually.',
+
+        model:
+          OLLAMA_MODEL
+
+      });
+
+    } catch (error: any) {
+
+      console.error(
+        'AI qualification error:',
+        error.message
+      );
+
+      res.status(500).json({
+
+        success:
+          false,
+
+        error:
+          error.response?.data ||
+          error.message ||
+          'AI qualification failed.'
+
+      });
+
+    }
+
+  }
+);
+
+// --------------------------------------------------
 // Ollama AI Test
 // --------------------------------------------------
 
