@@ -569,6 +569,158 @@ try {
 );
 
 // --------------------------------------------------
+// Get single lead
+// --------------------------------------------------
+
+app.get(
+  '/api/leads/:id',
+  async (req, res) => {
+
+    try {
+
+      const lead =
+        await Lead.findById(
+          req.params.id
+        );
+
+      if (!lead) {
+
+        return res.status(404).json({
+          success: false,
+          error: 'Lead not found'
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        lead
+
+      });
+
+    } catch (error: any) {
+
+      res.status(500).json({
+
+        success: false,
+
+        error:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+
+// --------------------------------------------------
+// Update lead
+// --------------------------------------------------
+
+app.put(
+  '/api/leads/:id',
+  async (req, res) => {
+
+    try {
+
+      const lead =
+        await Lead.findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          {
+            new: true,
+            runValidators: true
+          }
+        );
+
+      if (!lead) {
+
+        return res.status(404).json({
+          success: false,
+          error: 'Lead not found'
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        lead
+
+      });
+
+    } catch (error: any) {
+
+      res.status(500).json({
+
+        success: false,
+
+        error:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+
+// --------------------------------------------------
+// Delete lead
+// --------------------------------------------------
+
+app.delete(
+  '/api/leads/:id',
+  async (req, res) => {
+
+    try {
+
+      const lead =
+        await Lead.findByIdAndDelete(
+          req.params.id
+        );
+
+      if (!lead) {
+
+        return res.status(404).json({
+          success: false,
+          error: 'Lead not found'
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        message:
+          'Lead deleted successfully'
+
+      });
+
+    } catch (error: any) {
+
+      res.status(500).json({
+
+        success: false,
+
+        error:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+// --------------------------------------------------
 // Ollama AI Test
 // --------------------------------------------------
 
