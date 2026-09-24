@@ -950,66 +950,75 @@ Keep recommendation under 250 characters.
 // --------------------------------------------------
 
 app.post(
-'/api/ai/test',
-async (req, res) => {
+  '/api/ai/test',
+  async (req, res) => {
 
-try {
+    try {
 
-  const prompt =
-    req.body?.prompt ||
-    'Give me one short sales qualification question.';
+      const prompt =
+        req.body?.prompt ||
+        'Give me one short sales qualification question.';
 
-  const response =
-    await axios.post(
+      const response =
+        await axios.post(
 
-      `${OLLAMA_URL}/api/generate`,
+          `${OLLAMA_URL}/api/generate`,
 
-      {
-        model:
-          OLLAMA_MODEL,
+          {
+            model: OLLAMA_MODEL,
 
-        prompt,
+            prompt,
 
-        stream:
-          false
-      },
+            stream: false,
 
-      {
-        timeout:
-          120000
-      }
+            think: false,
 
-    );
+            options: {
+              num_predict: 150,
+              temperature: 0.2
+            }
+          },
 
-  res.json({
+          {
+            timeout: 30000
+          }
 
-    success:
-      true,
+        );
 
-    model:
-      OLLAMA_MODEL,
+      res.json({
 
-    response:
-      response.data.response
+        success: true,
 
-  });
+        model: OLLAMA_MODEL,
 
-} catch (error: any) {
+        response:
+          response.data?.response ||
+          'No response returned.'
 
-  res.status(500).json({
+      });
 
-    success:
-      false,
+    } catch (error: any) {
 
-    error:
-      error.response?.data ||
-      error.message
+      console.error(
+        'AI test error:',
+        error.response?.data ||
+        error.message
+      );
 
-  });
+      res.status(500).json({
 
-}
+        success: false,
 
-}
+        error:
+          error.response?.data ||
+          error.message ||
+          'AI test failed.'
+
+      });
+
+    }
+
+  }
 );
 
 // --------------------------------------------------
