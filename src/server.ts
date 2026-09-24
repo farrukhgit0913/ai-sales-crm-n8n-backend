@@ -213,9 +213,8 @@ mailpit: {
 
 webhook: {
   name: 'n8n Lead Webhook',
-  status: 'offline',
-  url:
-    `${N8N_URL}/webhook-test/ai-sales-lead`,
+  status: 'online',
+  url: `${N8N_URL}/webhook/ai-sales-lead`,
   description: 'Lead automation webhook'
 },
 
@@ -1017,53 +1016,32 @@ try {
 // n8n
 // --------------------------------------------------
 
-app.post(
-'/api/n8n/lead',
-async (req, res) => {
-
-try {
-
-  const response =
-    await axios.post(
-
-      `${N8N_URL}/webhook-test/ai-sales-lead`,
-
+app.post('/api/n8n/lead', async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${N8N_URL}/webhook/ai-sales-lead`,
       req.body,
-
-      {
-        timeout:
-          30000
-      }
-
+      { timeout: 30000 }
     );
 
-  res.json({
+    res.json({
+      success: true,
+      n8n: response.data,
+    });
+  } catch (error: any) {
+    console.error(
+      'n8n workflow error:',
+      error.response?.data || error.message
+    );
 
-    success:
-      true,
-
-    n8n:
-      response.data
-
-  });
-
-} catch (error: any) {
-
-  res.status(502).json({
-
-    success:
-      false,
-
-    error:
-      error.response?.data ||
-      error.message
-
-  });
-
-}
-
-}
-);
+    res.status(502).json({
+      success: false,
+      error:
+        error.response?.data ||
+        error.message,
+    });
+  }
+});
 
 // --------------------------------------------------
 // Mailpit Test
