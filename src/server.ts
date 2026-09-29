@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 import path from 'path';
+import open from "open";
 
 dotenv.config();
 
@@ -1131,7 +1132,7 @@ try {
 
 app.listen(
 PORT,
-() => {
+  async () => {
 
 console.log('');
 
@@ -1176,6 +1177,8 @@ console.log(
 );
 
 console.log('');
+
+await open(`http://localhost:${PORT}`);
 
 }
 );
