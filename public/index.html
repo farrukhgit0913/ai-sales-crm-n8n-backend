@@ -366,16 +366,11 @@ function renderServices(data) {
     ([, service]) => getServiceStatus(service)
   ).length;
 
-  document.getElementById("onlineCount").textContent =
-    data.summary?.online ?? online;
+  document.getElementById("onlineCount").textContent = online;
 
-  document.getElementById("totalCount").textContent =
-    data.summary?.total ?? serviceEntries.length;
+  document.getElementById("totalCount").textContent = serviceEntries.length;
 
-  document.getElementById("healthyCount").textContent =
-    serviceEntries.filter(
-      ([, service]) => getServiceStatus(service)
-    ).length;
+  document.getElementById("healthyCount").textContent = online;
 
   const container = document.getElementById("services");
 
