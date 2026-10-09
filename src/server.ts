@@ -1,6 +1,6 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import axios from "axios";
 import nodemailer from "nodemailer";
@@ -8,6 +8,7 @@ import path from "path";
 import open from "open";
 import { execFile } from "child_process";
 import { promisify } from "util";
+import authRoutes from "./routes/auth.routes";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 const PORT = Number(process.env.PORT || 3000);
 
